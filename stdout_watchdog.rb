@@ -65,13 +65,9 @@ loop do
     end
   end
   
-  puts "restarting process...t=3"
-  sleep 1
-  
-  puts "restarting process...t=2"
-  sleep 1
-  
-  puts "restarting process...t=1"
-  sleep 1
+  3.downto(1) do |t|
+    puts "restarting...t=#{t}"
+    sleep 1
+  end
 end
 
