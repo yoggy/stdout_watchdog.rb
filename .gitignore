@@ -1,0 +1,3 @@
+*.swp
+.stdout_watch_dog.so
+.stdout_watch_dog.c
