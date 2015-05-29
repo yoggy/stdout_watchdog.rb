@@ -3,7 +3,7 @@
 # stdout_watchdog.rb - simple watchdog program
 #
 # github:
-#     https://github.com/yoggy/
+#     https://github.com/yoggy/stdout_watchdog.rb
 #
 # license:
 #     Copyright (c) 2015 yoggy <yoggy0@gmail.com>
