@@ -1,6 +1,6 @@
 stdout_watchdog.rb
 ====
-simple watchdog program.
+simple watchdog program. (Linux only)
 
 example
 ----
