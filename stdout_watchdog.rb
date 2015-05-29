@@ -43,15 +43,6 @@ def usage
 end
 usage if ARGV.size == 0
 
-
-#
-# check File.exists?
-#
-unless File.exists?(ARGV[0])
-	puts "#{$0}: command not found: #{ARGV[0]}"
-	exit 1
-end
-
 #
 # watch dog main loop...
 #
