@@ -22,6 +22,7 @@ $stderr.sync = true
 unless File.exists?("./.stdout_watchdog.so")
   open(".stdout_watchdog.c", "w") do |f|
     f.puts <<-EOS
+// hook setbuf() & setvbuf() library
 #include <dlfcn.h>
 #include <stdio.h>
 
