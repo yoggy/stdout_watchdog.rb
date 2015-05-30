@@ -19,15 +19,50 @@ $stderr.sync = true
 #
 # prepare "./stdout_watch_dog.so"
 #
-unless File.exists?("./stdout_watchdog.so")
+unless File.exists?("./.stdout_watchdog.so")
   open(".stdout_watchdog.c", "w") do |f|
     f.puts <<-EOS
+#include <dlfcn.h>
 #include <stdio.h>
-void __attribute__ ((constructor))
+
+#if defined(RTLD_NEXT)
+#define REAL_LIBC RTLD_NEXT
+#else
+#define REAL_LIBC ((void *) -1L)
+#endif
+
+static void (*orig_setbuf)(FILE*, char*) = NULL;
+static int (*orig_setvbuf)(FILE*, char*, int, size_t) = NULL;
+
+static void __attribute__ ((constructor))
 _constructor()
 {
-  setvbuf(stdout, NULL, _IONBF, 0);
-  setvbuf(stderr, NULL, _IONBF, 0);
+  puts("_constructor()");
+  orig_setbuf = (void(*)(FILE*, char*))dlsym(REAL_LIBC, "setbuf");
+  orig_setvbuf = (int(*)(FILE*, char*, int, size_t))dlsym(REAL_LIBC, "setvbuf");
+
+  orig_setvbuf(stdout, NULL, _IONBF, 0);
+  orig_setvbuf(stderr, NULL, _IONBF, 0);
+}
+
+void
+setbuf(FILE *fp, char *buf)
+{
+  puts("setbuf()");
+  if (fp == stdout || fp == stderr) {
+    return orig_setbuf(fp, NULL);
+  }
+  return orig_setbuf(fp, buf);
+}
+
+int
+setvbuf(FILE *fp, char *buf, int mode, size_t size)
+{
+  puts("setvbuf()");
+  if (fp == stdout || fp == stderr) {
+    return orig_setvbuf(fp, NULL, _IONBF, 0);
+  }
+  return orig_setvbuf(fp, buf, mode, size);
 }
 EOS
   end
@@ -46,7 +81,7 @@ usage if ARGV.size == 0
 #
 # watch dog main loop...
 #
-cmd = ARGV.join(" ")
+cmd = ARGV.map{|s| s=~/\s/?"'#{s}'":s}.join(" ")
 loop do
   puts "start process...cmd=#{cmd}"
   Open3.popen3({"LD_PRELOAD"=>"./.stdout_watchdog.so"}, cmd) do |i, o, e, w|
